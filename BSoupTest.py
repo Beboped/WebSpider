@@ -20,7 +20,7 @@ def get_links(url):
     bsObj = BeautifulSoup(html, "html.parser", parse_only=SoupStrainer("a"))
     return bsObj.findAll("a", {"href":re.compile("^http:\/\/[a-zA-Z]{0,4}\.?datasciencedojo\.com[^.]+(?!\.)")})
 
-urls_encountered = {"http://www.datasciencedojo.com"}
+urls_encountered = {"http://datasciencedojo.com/"}
 urls_checked = set()
 error_list = []
 ii = 0
@@ -32,14 +32,17 @@ while len(urls_encountered) > 0:
         nexturl = urls_encountered.pop()    
         print(nexturl)
     try:
+        urls_checked.add(nexturl)
         new_links = get_links(nexturl)
     except HTTPError as e:
         error_list.append((nexturl, e))
+        print(e)
     else:
         for tag in new_links:
-            if tag['href'] not in urls_checked:
+            if (tag['href'] not in urls_checked 
+                and re.search(r"(\.pdf$|\.jpg$|\.png$)",
+                             tag['href'])) is None:
                 urls_encountered.add(tag['href'])
-    urls_checked.add(nexturl)
 
 print(error_list)
 print(urls_checked)
